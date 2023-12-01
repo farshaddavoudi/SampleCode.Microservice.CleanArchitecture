@@ -1,20 +1,83 @@
+### Installation:
 
+Install VS Code and the following extensions: `C# (Microsoft)`, `C# Snippets`, `C# Extensions`.
 
-# Technologies:
-**.NET 7** / **CorrelationId Handling** / **CQRS with MediatR** / **Global Exception Handling**
- / **Serilog for diagnostic logs with many enrichers and Seq sink** / **EF Core 7 with SQLServer**
- / **Postman document for APIs** / **Audit.NET logs for EF Core and WebAPI Audit Logs written in MongoDB** 
- / **Clean Architecture** / **JWT Token Auth** / **Hangfire [without dashbaord]**
+Also, install the .NET SDK.
 
-# Architecture
- It is Clean Architechture, the one more aligned withJson Tylor and Nick Chapsas.
+### Dependency Injection Registration:
 
-### Domain:
- - Things related to the domain (a little like DDD). No logic comes here. 
- - This will contain all entities, enums, exceptions, interfaces, types and logic specific to the domain layer.
+Utilize a package like `AutoRegisterDi` in conjunction with the *DiInstaller* pattern.
 
-### Application:
- - Orchestrate the application. This layer contains all application logic. It is dependent on the domain layer, but has no dependencies on any other layer or project. This layer defines interfaces that are implemented by outside layers and DTOs. For example, if the application need to access a notification service, a new interface would be added to application and an implementation would be created within infrastructure.
+### Project Architecture:
 
-### Infrastructure:
- - This layer contains classes for accessing external resources such as file systems, web services, smtp, and so on. These classes should be based on interfaces defined within the application layer.
+Implement *Clean Architecture* with the following projects:
+
+- API (WebAPI project)
+- Application (Class Library)
+- Infrastructure (Class Library)
+- Domain (Class Library)
+
+> It is the Clean Architecture varient which is more aligned with Json Tylor and Nick Chapsas. 
+
+## Clean Code:
+
+Follow these rules:
+
+- Use clear, meaningful, and complete names for classes, methods, parameters, and variables without unnecessary shortening. Long names are acceptable.
+- Adhere to the Single Responsibility Principle: Create lightweight classes, especially with the help of CQRS.
+- Keep comments short and concise; names should be self-explanatory. Avoid long comments.
+
+## Mapping:
+
+While *AutoMapper* is used, consider other libraries or manual mapping for better performance. AutoMapper adversely affects project performance, especially for high-load applications.
+
+## Databases / ORMs:
+
+- SQL Server [main db]
+- EF Core Code First configured with Fluent API
+- Generic Repository pattern with Unit of Work and Specification Pattern
+- Dapper [configured with DI; provided a simple use case as an example]
+- PostgreSQL [store Hangfire jobs]
+- MongoDB [store API Request/Response and EF Core audit logs]
+- Seq [Serilog logs sink]
+  
+## Coding Pattern: CQRS (implemented using MediatR library)
+
+- Use the `.Send()` method to dispatch requests to appropriate handlers.
+- Use the `.Publish()` method to leverage *MediatR*'s notification feature for *Eventing*
+- Utilize *FluentValidation* for validating requests configured in *MediatR Pipeline Behaviours*.
+  
+## Authentication:
+
+- Utilize *JWT* tokens containing an encrypted userId.
+- Provide complete user claims through middleware (between `app.UseAuthentication()` and `app.UseAuthorization()`) using *Redis* to enhance speed and avoid adverse effects on performance.
+- Use *RefreshToken* to refresh/re-issue the token (stored in *Redis* for per-request checks to enable instant user disabling control).
+  
+## Background Jobs:
+
+- Use *Hangfire* to run background jobs.
+- Configured a secure dashboard with Administrator role restriction to view it.
+- Use it for syncing the users' table.
+- Use the *Hosted Sevices* for listening *RabbitMQ* messages
+
+## Tracking Performance:
+
+- K6 test tool [Normal/Stress/Spike/Soak load/performance tests]
+- MiniProfiler library [only in development]
+- Audit.NET library [Request/Response + EF Core audit logs stored in MongoDB]
+  
+## SignalR:
+
+- Create a notification Hub for sending messages to the clients (Make `NotificationsHub` strongly typed).
+- Use *Redis* as a backplane for scale-out.
+- Develop a protected *Minimal API* endpoint to send a message to all connected clients.
+  
+## gRPC:
+
+- Utilize gRPC to request user permission for a controller's `action` from other microservices and obtain user roles and other information.
+- Aim for high-performance connections, especially considering it is called per request.
+- Employ gRPC, which internally uses a service based on Redis cache, making this process very fast.
+  
+## Message Broker: RabbitMQ
+
+Publish messages, such as a user added or changed, so that other services can listen and be notified.
