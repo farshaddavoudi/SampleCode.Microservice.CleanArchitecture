@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Ardalis.Specification" Version="7.0.0" />
+		<PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="7.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.13" />
+		<PackageReference Include="MediatR" Version="12.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.13" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.13" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
+		<PackageReference Include="NetCore.AutoRegisterDi" Version="2.1.0" />
+		<PackageReference Include="RabbitMQ.Client" Version="6.6.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="CQRS\Application\Commands\CreateOrUpdateApplication\Events\" />
+		<Folder Include="CQRS\Application\Commands\RemoveApplication\" />
+		<Folder Include="CQRS\Application\DTOs\" />
+		<Folder Include="CQRS\User\Commands\Login\Events\" />
+		<Folder Include="CQRS\User\Commands\KickOutUser\" />
+		<Folder Include="CQRS\User\Commands\RegisterRahkaranUser\Events\" />
+		<Folder Include="CQRS\User\Queries\GetAllUsers\" />
+		<Folder Include="ServicesContracts\" />
+		<Folder Include="Services\SyncUsersService\Events\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SampleMicroserviceApp.Identity.Domain\SampleMicroserviceApp.Identity.Domain.csproj" />
+	</ItemGroup>
+
+</Project>

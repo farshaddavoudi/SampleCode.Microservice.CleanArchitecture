@@ -1,0 +1,4 @@
+{
+    "dotnet.defaultSolution": "SampleMicroserviceApp.Identity.sln",
+    "csharp.debug.console": "externalTerminal"
+}

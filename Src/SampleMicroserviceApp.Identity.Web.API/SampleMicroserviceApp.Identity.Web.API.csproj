@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Audit.WebApi" Version="21.1.0" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.58.0" />
+		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.13" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="7.0.13" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.13">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="5.6.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Controllers\Claim\" />
+		<Folder Include="Controllers\Application\" />
+		<Folder Include="Controllers\Role\" />
+		<Folder Include="Controllers\Upload\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SampleMicroserviceApp.Identity.Application\SampleMicroserviceApp.Identity.Application.csproj" />
+	  <ProjectReference Include="..\SampleMicroserviceApp.Identity.Infrastructure\SampleMicroserviceApp.Identity.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Grpc\permissions.proto" GrpcServices="Server,Client" />
+	</ItemGroup>
+
+	<ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+</Project>

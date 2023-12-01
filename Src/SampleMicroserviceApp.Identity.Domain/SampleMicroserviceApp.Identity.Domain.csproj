@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Localization\**" />
+		<EmbeddedResource Remove="Localization\**" />
+		<None Remove="Localization\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Entities\Application\" />
+	  <Folder Include="Entities\Claim\" />
+	  <Folder Include="Entities\Role\" />
+	  <Folder Include="Enums\Application\" />
+	  <Folder Include="Extensions\" />
+	  <Folder Include="Resources\DataAnnotations\" />
+	  <Folder Include="Resources\EnumDisplayNames\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="DNTPersianUtils.Core" Version="5.7.1" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Resources\ExceptionMessages\ExceptionStrings.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>ExceptionStrings.resx</DependentUpon>
+	  </Compile>
+	  <Compile Update="Resources\OtherMessages\MessageStrings.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>MessageStrings.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Resources\ExceptionMessages\ExceptionStrings.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	    <LastGenOutput>ExceptionStrings.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="Resources\OtherMessages\MessageStrings.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	    <LastGenOutput>MessageStrings.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+</Project>

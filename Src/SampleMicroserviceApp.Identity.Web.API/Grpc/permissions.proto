@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option csharp_namespace = "SampleMicroserviceApp.Identity.Web.API.Grpc";
+
+service UserPermissions {
+	rpc HasUserAccessToResource (HasUserAccessToResourceRequest) returns (HasUserAccessToResourceResponse);
+	rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
+}
+
+message HasUserAccessToResourceRequest {
+	int32 user_id = 1;
+	string app_key = 2;
+	repeated string allowed_claims = 3;
+	repeated string allowed_roles = 4;
+}
+
+message HasUserAccessToResourceResponse {
+	bool has_access = 1;
+}
+
+message GetUserRolesRequest {
+	int32 user_id = 1;
+	string app_key = 2;
+}
+
+message GetUserRolesResponse {
+	repeated string roles = 1;
+}
