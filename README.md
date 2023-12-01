@@ -62,9 +62,9 @@ While *AutoMapper* is used, consider other libraries or manual mapping for bette
 
 ## Tracking Performance:
 
-- K6 test tool [Normal/Stress/Spike/Soak load/performance tests]
-- MiniProfiler library [only in development]
-- Audit.NET library [Request/Response + EF Core audit logs stored in MongoDB]
+- *K6* test tool [Normal/Stress/Spike/Soak load/performance tests]
+- *MiniProfiler* library [only in development]
+- *Audit.NET* library [Request/Response + EF Core audit logs stored in MongoDB]
   
 ## SignalR:
 
