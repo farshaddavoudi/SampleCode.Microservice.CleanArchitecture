@@ -1,30 +1,17 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using System.Text.Json;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.CQRS.Claim.Specifications;
 using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Entities.Claim;
+using System.Text.Json;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Caching;
 
-public class RoleClaimsCacheService : IRoleClaimsCacheService
+public class RoleClaimsCacheService(IDistributedCache distributedCache, IRepository<ClaimEntity> claimRepository) : IRoleClaimsCacheService
 {
-    private readonly IDistributedCache _distributedCache;
-    private readonly IRepository<ClaimEntity> _claimRepository;
-
-    #region ctor
-
-    public RoleClaimsCacheService(IDistributedCache distributedCache, IRepository<ClaimEntity> claimRepository)
-    {
-        _distributedCache = distributedCache;
-        _claimRepository = claimRepository;
-    }
-
-    #endregion
-
     public async Task SetRoleClaimsAsync(string roleKey, List<string> claimKeys, CancellationToken cancellationToken)
     {
-        await _distributedCache.SetStringAsync(CacheKeyConst.RoleClaims(roleKey!),
+        await distributedCache.SetStringAsync(CacheKeyConst.RoleClaims(roleKey!),
             JsonSerializer.Serialize(claimKeys),
             cancellationToken);
     }
@@ -33,11 +20,11 @@ public class RoleClaimsCacheService : IRoleClaimsCacheService
     {
         List<string> claims = new();
 
-        var claimsSerialized = await _distributedCache.GetStringAsync(CacheKeyConst.RoleClaims(roleKey), cancellationToken);
+        var claimsSerialized = await distributedCache.GetStringAsync(CacheKeyConst.RoleClaims(roleKey), cancellationToken);
 
         if (string.IsNullOrWhiteSpace(claimsSerialized))
         {
-            var roleClaimsFromDb = await _claimRepository.ToListProjectedDistinctAsync(
+            var roleClaimsFromDb = await claimRepository.ToListProjectedDistinctAsync(
                 new ClaimKeyByRoleKeySpec(roleKey), cancellationToken);
 
             if (roleClaimsFromDb.Any())

@@ -1,30 +1,17 @@
-﻿using System.Diagnostics;
-using System.Security.Claims;
-using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.Common.Exceptions;
 using SampleMicroserviceApp.Identity.Domain.Constants;
+using System.Security.Claims;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Caching;
 
-public class RedisUserPermissionsService : IUserPermissionsService
+public class RedisUserPermissionsService(
+    IApplicationCacheService applicationCacheService,
+    IUserRolesCacheService userRolesCacheService,
+    IUserCacheService userCacheService,
+    IRoleClaimsCacheService roleClaimsCacheService
+    ) : IUserPermissionsService
 {
-    private readonly IApplicationCacheService _applicationCacheService;
-    private readonly IUserRolesCacheService _userRolesCacheService;
-    private readonly IUserCacheService _userCacheService;
-    private readonly IRoleClaimsCacheService _roleClaimsCacheService;
-
-    #region ctor
-
-    public RedisUserPermissionsService(IApplicationCacheService applicationCacheService, IUserRolesCacheService userRolesCacheService, IUserCacheService userCacheService, IRoleClaimsCacheService roleClaimsCacheService)
-    {
-        _applicationCacheService = applicationCacheService;
-        _userRolesCacheService = userRolesCacheService;
-        _userCacheService = userCacheService;
-        _roleClaimsCacheService = roleClaimsCacheService;
-    }
-
-    #endregion
-
     public async Task<bool> HasUserAccessToResource(int userId, string appKey, List<string> allowedClaims, List<string> allowedRoles, CancellationToken cancellationToken)
     {
         var userRoles = await GetUserRolesAsync(userId, appKey, cancellationToken);
@@ -37,7 +24,7 @@ public class RedisUserPermissionsService : IUserPermissionsService
             }
         }
 
-        var appFromCache = await _applicationCacheService.GetAppAsync(appKey, CancellationToken.None);
+        var appFromCache = await applicationCacheService.GetAppAsync(appKey, CancellationToken.None);
 
         if (appFromCache is null)
         {
@@ -65,7 +52,7 @@ public class RedisUserPermissionsService : IUserPermissionsService
 
     public async Task<List<string>> GetUserRolesAsync(int userId, string appKey, CancellationToken cancellationToken)
     {
-        var appCached = await _applicationCacheService.GetAppAsync(appKey, cancellationToken);
+        var appCached = await applicationCacheService.GetAppAsync(appKey, cancellationToken);
 
         if (appCached is null)
         {
@@ -76,7 +63,7 @@ public class RedisUserPermissionsService : IUserPermissionsService
 
         appKeys.Add(appCached.Value.MainApp.Key!);
 
-        var userRoles = await _userRolesCacheService.GetUserRolesAsync(userId, appKeys, cancellationToken);
+        var userRoles = await userRolesCacheService.GetUserRolesAsync(userId, appKeys, cancellationToken);
 
         return userRoles.Distinct().ToList();
     }
@@ -86,11 +73,11 @@ public class RedisUserPermissionsService : IUserPermissionsService
     {
         List<string> appAndRelatedAppsAggregatedRoles = await GetUserRolesAsync(userId, appKey, cancellationToken);
 
-        var userInfo = await _userCacheService.GetUserAsync(userId, cancellationToken);
+        var userInfo = await userCacheService.GetUserAsync(userId, cancellationToken);
 
         if (userInfo is null)
             throw new BadRequestException("UserId is incorrect. No user was found");
-        
+
         List<Claim> claims = new()
         {
             new(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -114,7 +101,7 @@ public class RedisUserPermissionsService : IUserPermissionsService
 
         foreach (var roleKey in appAndRelatedAppsAggregatedRoles)
         {
-            var claims = await _roleClaimsCacheService.GetRoleClaimsAsync(roleKey, cancellationToken);
+            var claims = await roleClaimsCacheService.GetRoleClaimsAsync(roleKey, cancellationToken);
 
             aggregatedClaims.AddRange(claims);
         }

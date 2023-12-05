@@ -2,27 +2,16 @@
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.UnitOfWork;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(AppDbContext dbContext) : IUnitOfWork
 {
-    private readonly AppDbContext _dbContext;
-
-    #region ctor
-
-    public UnitOfWork(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    #endregion
-
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public void SaveChange()
     {
-        _dbContext.SaveChanges();
+        dbContext.SaveChanges();
     }
 
     private bool _disposed;
@@ -32,7 +21,7 @@ public class UnitOfWork : IUnitOfWork
         if (!_disposed)
         {
             if (disposing)
-                _dbContext.Dispose();
+                dbContext.Dispose();
         }
 
         _disposed = true;
