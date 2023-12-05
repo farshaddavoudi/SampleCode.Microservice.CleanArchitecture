@@ -1,22 +1,9 @@
-﻿using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
-using SampleMicroserviceApp.Identity.Domain.Constants;
-using SampleMicroserviceApp.Identity.Domain.Extensions;
+﻿using SampleMicroserviceApp.Identity.Domain.Extensions;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Middlewares;
 
-public class HandleHangfireDashboardAuthMiddleware : IMiddleware
+public class HandleHangfireDashboardAuthMiddleware(AppSettings appSettings) : IMiddleware
 {
-    private readonly AppSettings _appSettings;
-
-    #region ctor
-
-    public HandleHangfireDashboardAuthMiddleware(AppSettings appSettings)
-    {
-        _appSettings = appSettings;
-    }
-
-    #endregion
-
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         // Check if the request path contains the string "hangfire"
@@ -60,6 +47,6 @@ public class HandleHangfireDashboardAuthMiddleware : IMiddleware
     private void SetHangfireCookieForAuth(string jwtToken, HttpContext httpContext)
     {
         httpContext.Response.Cookies.Append("_hangfireCookie", jwtToken,
-            new CookieOptions { Expires = DateTime.Now.Add(_appSettings.AuthSettings!.JwtTokenTtl) });
+            new CookieOptions { Expires = DateTime.Now.Add(appSettings.AuthSettings!.JwtTokenTtl) });
     }
 }
