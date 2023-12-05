@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.Services.SyncUsersService.Events;
 using SampleMicroserviceApp.Identity.Application.ServicesContracts;
@@ -9,35 +8,22 @@ using SampleMicroserviceApp.Identity.Domain.Extensions;
 
 namespace SampleMicroserviceApp.Identity.Application.Services.SyncUsersService;
 
-public class SyncUsersService : ISyncUsersService
+public class SyncUsersService(
+    IRepository<UserRahkaranViewEntity> userRahkaranViewRepository,
+    IRepository<UserEntity> userRepository,
+    IUnitOfWork unitOfWork,
+    IMapper mapper,
+    IMediator mediator
+    ) : ISyncUsersService
 {
-    private readonly IRepository<UserRahkaranViewEntity> _userRahkaranViewRepository;
-    private readonly IRepository<UserEntity> _userRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    private readonly IMediator _mediator;
-
-    #region ctor
-
-    public SyncUsersService(IRepository<UserRahkaranViewEntity> userRahkaranViewRepository, IRepository<UserEntity> userRepository, IUnitOfWork unitOfWork, IMapper mapper, IMediator mediator)
-    {
-        _userRahkaranViewRepository = userRahkaranViewRepository;
-        _userRepository = userRepository;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-        _mediator = mediator;
-    }
-
-    #endregion
-
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         // Get users from Rahkaran view 
         // Project to record type as well to be comparable
-        var rahkaranUsers = await _userRahkaranViewRepository.ToListProjectedAsync<UserComparableRecord>(cancellationToken);
+        var rahkaranUsers = await userRahkaranViewRepository.ToListProjectedAsync<UserComparableRecord>(cancellationToken);
 
         // Get users from Users table 
-        var systemUsers = await _userRepository.ToListAsync(cancellationToken);
+        var systemUsers = await userRepository.ToListAsync(cancellationToken);
 
         bool anyChange = false;
 
@@ -50,9 +36,9 @@ public class SyncUsersService : ISyncUsersService
             // If not any found => Create a new user with state of InitialActivation = false, then continue to next loop [User create RabbitMQ event will be produced when user initial activation has been completed]
             if (userInSystem is null)
             {
-                var newUserToAdd = _mapper.Map<UserEntity>(rahkaranUserRecord);
+                var newUserToAdd = mapper.Map<UserEntity>(rahkaranUserRecord);
 
-                await _userRepository.AddAsync(newUserToAdd, cancellationToken);
+                await userRepository.AddAsync(newUserToAdd, cancellationToken);
 
                 anyChange = true;
 
@@ -66,7 +52,7 @@ public class SyncUsersService : ISyncUsersService
             }
 
             // Convert user to a record to be compared
-            UserComparableRecord systemUserRecord = _mapper.Map<UserComparableRecord>(userInSystem);
+            UserComparableRecord systemUserRecord = mapper.Map<UserComparableRecord>(userInSystem);
 
             // Compare the two record types, if were the same, continue for the next loop
             if (systemUserRecord.Equals(rahkaranUserRecord))
@@ -80,19 +66,19 @@ public class SyncUsersService : ISyncUsersService
             UserEntity oldSystemUser = userInSystem.Clone<UserEntity>();
 
             // 1-  Update System user from Changed Rahkaran user
-            UserEntity user = _mapper.Map(rahkaranUserRecord, userInSystem);
+            UserEntity user = mapper.Map(rahkaranUserRecord, userInSystem);
 
-            await _userRepository.UpdateAsync(user, cancellationToken, false);
+            await userRepository.UpdateAsync(user, cancellationToken, false);
 
             // Publish event to reset all Caches related to this user + Produce a RabbitMQ message about the user change 
             // If the user IsRegister = true The Cache update would be one of Consumers
-            await _mediator.Publish(new RahkaranUserEditedEvent(rahkaranUserRecord, oldSystemUser), cancellationToken);
+            await mediator.Publish(new RahkaranUserEditedEvent(rahkaranUserRecord, oldSystemUser), cancellationToken);
         }
 
         // Save all the changes, of course if any happened
         if (anyChange)
         {
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

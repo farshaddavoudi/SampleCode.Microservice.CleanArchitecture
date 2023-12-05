@@ -1,36 +1,23 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
+using SampleMicroserviceApp.Identity.Domain.Utilities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
-using SampleMicroserviceApp.Identity.Domain.Utilities;
 
 namespace SampleMicroserviceApp.Identity.Application.Services;
 
-public class AuthTokenUtility
+public class AuthTokenUtility(AppSettings appSettings, CryptoUtility cryptoUtility)
 {
-    private readonly AppSettings _appSettings;
-    private readonly CryptoUtility _cryptoUtility;
-
-    #region ctor
-
-    public AuthTokenUtility(AppSettings appSettings, CryptoUtility cryptoUtility)
-    {
-        _appSettings = appSettings;
-        _cryptoUtility = cryptoUtility;
-    }
-
-    #endregion
-
     public string GenerateJwtToken(List<Claim> userClaims)
     {
         var jwtTokenHandler = new JwtSecurityTokenHandler();
 
-        var jwtSecretKey = Encoding.ASCII.GetBytes(_appSettings.AuthSettings!.JwtSecret);
+        var jwtSecretKey = Encoding.ASCII.GetBytes(appSettings.AuthSettings!.JwtSecret);
 
-        var tokenTtl = _appSettings.IsDevelopment
+        var tokenTtl = appSettings.IsDevelopment
             ? TimeSpan.FromDays(1)
-            : _appSettings.AuthSettings.JwtTokenTtl;
+            : appSettings.AuthSettings.JwtTokenTtl;
 
         // Token descriptor
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -49,7 +36,7 @@ public class AuthTokenUtility
     {
         var tokenClaims = new List<Claim>();
 
-        var encryptedUserId = _cryptoUtility.ToEncryptedBase64(userId.ToString(), _appSettings.AuthSettings!.UserIdEncryptionKey);
+        var encryptedUserId = cryptoUtility.ToEncryptedBase64(userId.ToString(), appSettings.AuthSettings!.UserIdEncryptionKey);
 
         tokenClaims.Add(new Claim(ClaimTypes.NameIdentifier, encryptedUserId));
 

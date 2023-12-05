@@ -8,24 +8,12 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.Application.Queries.Ge
 public record GetAllApplicationsQuery : IRequest<List<ApplicationDto>>;
 
 // Handler
-public class GetAllApplicationsQueryHandler : IRequestHandler<GetAllApplicationsQuery, List<ApplicationDto>>
+public class GetAllApplicationsQueryHandler(IRepository<ApplicationEntity> applicationRepository, IApplicationCacheService appCacheService)
+    : IRequestHandler<GetAllApplicationsQuery, List<ApplicationDto>>
 {
-    private readonly IRepository<ApplicationEntity> _applicationRepository;
-    private readonly IApplicationCacheService _appCacheService;
-
-    #region ctor
-
-    public GetAllApplicationsQueryHandler(IRepository<ApplicationEntity> applicationRepository, IApplicationCacheService applicationCacheService)
-    {
-        _applicationRepository = applicationRepository;
-        _appCacheService = applicationCacheService;
-    }
-
-    #endregion
-
     public async Task<List<ApplicationDto>> Handle(GetAllApplicationsQuery request, CancellationToken cancellationToken)
     {
-        var apps = await _applicationRepository.ToListProjectedAsync<ApplicationDto>(
+        var apps = await applicationRepository.ToListProjectedAsync<ApplicationDto>(
                 new ApplicationByFiltersSpec(null), cancellationToken);
 
         foreach (var app in apps)
@@ -36,7 +24,7 @@ public class GetAllApplicationsQueryHandler : IRequestHandler<GetAllApplications
 
                 foreach (var relatedAppId in app.RelatedApps)
                 {
-                    var relatedApp = await _appCacheService.GetAppAsync(relatedAppId, cancellationToken);
+                    var relatedApp = await appCacheService.GetAppAsync(relatedAppId, cancellationToken);
 
                     if (relatedApp is not null)
                     {

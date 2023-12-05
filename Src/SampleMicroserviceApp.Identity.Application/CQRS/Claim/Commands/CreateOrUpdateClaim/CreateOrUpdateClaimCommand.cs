@@ -19,29 +19,18 @@ public class CreateOrUpdateClaimCommand : IRequest
 }
 
 // Handler
-public class CreateOrUpdateClaimCommandHandler : IRequestHandler<CreateOrUpdateClaimCommand>
+public class CreateOrUpdateClaimCommandHandler(
+        IMapper mapper,
+        IRepository<ClaimEntity> claimRepository,
+        IRepository<ApplicationEntity> applicationRepository
+        ) : IRequestHandler<CreateOrUpdateClaimCommand>
 {
-    private readonly IMapper _mapper;
-    private readonly IRepository<ClaimEntity> _claimRepository;
-    private readonly IRepository<ApplicationEntity> _applicationRepository;
-
-    #region ctor
-
-    public CreateOrUpdateClaimCommandHandler(IMapper mapper, IRepository<ClaimEntity> claimRepository, IRepository<ApplicationEntity> applicationRepository)
-    {
-        _mapper = mapper;
-        _claimRepository = claimRepository;
-        _applicationRepository = applicationRepository;
-    }
-
-    #endregion
-
     public async Task Handle(CreateOrUpdateClaimCommand request, CancellationToken cancellationToken)
     {
         if (request.Id is null) //=Add
         {
             // Get the app
-            var app = await _applicationRepository.GetByIdAsync(request.ApplicationId, cancellationToken);
+            var app = await applicationRepository.GetByIdAsync(request.ApplicationId, cancellationToken);
 
             if (app is null)
                 throw new BadRequestException("The application is invalid");
@@ -49,16 +38,16 @@ public class CreateOrUpdateClaimCommandHandler : IRequestHandler<CreateOrUpdateC
             request.Key = $"{app.Key}_{request.Key}";
 
             // Check the Key to be repetitive
-            var isClaimWithSameKeyExists = await _claimRepository.AnyAsync(
+            var isClaimWithSameKeyExists = await claimRepository.AnyAsync(
                     new ClaimByKeySpec(request.Key), cancellationToken);
 
             if (isClaimWithSameKeyExists)
                 throw new BusinessLogicException("The app key cannot be repetitive. A claim with same key already exists.");
 
             // Insert new Claim
-            var claimToAdd = _mapper.Map<ClaimEntity>(request);
+            var claimToAdd = mapper.Map<ClaimEntity>(request);
 
-            await _claimRepository.AddAsync(claimToAdd, cancellationToken);
+            await claimRepository.AddAsync(claimToAdd, cancellationToken);
         }
         else //=Update
         {

@@ -6,32 +6,22 @@ using SampleMicroserviceApp.Identity.Domain.Entities.Role;
 
 namespace SampleMicroserviceApp.Identity.Application.CQRS.Role.Commands.ChangeRoleClaims.Events;
 
-public class ResetRoleClaimsCacheEventHandler : INotificationHandler<RoleClaimsChangedEvent>
+public class ResetRoleClaimsCacheEventHandler(
+        IRoleClaimsCacheService roleClaimsCacheService,
+        IRepository<ClaimEntity> claimRepository,
+        IRepository<RoleEntity> roleRepository
+        )
+    : INotificationHandler<RoleClaimsChangedEvent>
 {
-    private readonly IRoleClaimsCacheService _roleClaimsCacheService;
-    private readonly IRepository<ClaimEntity> _claimRepository;
-    private readonly IRepository<RoleEntity> _roleRepository;
-
-    #region ctor
-
-    public ResetRoleClaimsCacheEventHandler(IRoleClaimsCacheService roleClaimsCacheService, IRepository<ClaimEntity> claimRepository, IRepository<RoleEntity> roleRepository)
-    {
-        _roleClaimsCacheService = roleClaimsCacheService;
-        _claimRepository = claimRepository;
-        _roleRepository = roleRepository;
-    }
-
-    #endregion
-
     public async Task Handle(RoleClaimsChangedEvent notification, CancellationToken cancellationToken)
     {
-        var roleKey = await _roleRepository.FirstOrDefaultProjectedAsync(
+        var roleKey = await roleRepository.FirstOrDefaultProjectedAsync(
             new RoleKeyById(notification.RoleId), cancellationToken);
 
-        var claimKeys = await _claimRepository.ToListProjectedAsync(
+        var claimKeys = await claimRepository.ToListProjectedAsync(
                 new ClaimKeyWithinIdsSpec(notification.ClaimIds), cancellationToken);
 
         if (claimKeys.Any())
-            await _roleClaimsCacheService.SetRoleClaimsAsync(roleKey!, claimKeys!, cancellationToken);
+            await roleClaimsCacheService.SetRoleClaimsAsync(roleKey!, claimKeys!, cancellationToken);
     }
 }
