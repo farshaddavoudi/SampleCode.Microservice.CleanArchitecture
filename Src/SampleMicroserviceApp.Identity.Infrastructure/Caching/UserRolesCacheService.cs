@@ -1,28 +1,19 @@
-﻿using StackExchange.Redis;
-using System.Text.Json;
-using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.CQRS.Role.Specifications;
 using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Entities.Role;
+using StackExchange.Redis;
+using System.Text.Json;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Caching;
 
-public class UserRolesCacheService : IUserRolesCacheService
+public class UserRolesCacheService(
+    IConnectionMultiplexer connectionMultiplexer,
+    IRepository<RoleEntity> roleRepository,
+    IApplicationCacheService applicationCacheService
+    ) : IUserRolesCacheService
 {
-    private readonly IDatabase _redisDb;
-    private readonly IRepository<RoleEntity> _roleRepository;
-    private readonly IApplicationCacheService _applicationCacheService;
-
-    #region ctor
-
-    public UserRolesCacheService(IConnectionMultiplexer connectionMultiplexer, IRepository<RoleEntity> roleRepository, IApplicationCacheService applicationCacheService)
-    {
-        _roleRepository = roleRepository;
-        _applicationCacheService = applicationCacheService;
-        _redisDb = connectionMultiplexer.GetDatabase();
-    }
-
-    #endregion
+    private readonly IDatabase _redisDb = connectionMultiplexer.GetDatabase();
 
     public async Task SetUserRolesAsync(int userId, string appKey, List<string> roleKeys, CancellationToken cancellationToken)
     {
@@ -42,14 +33,14 @@ public class UserRolesCacheService : IUserRolesCacheService
 
             if (string.IsNullOrWhiteSpace(rolesSerialized))
             {
-                var app = await _applicationCacheService.GetAppAsync(appKey, cancellationToken);
+                var app = await applicationCacheService.GetAppAsync(appKey, cancellationToken);
 
                 if (app is null)
                 {
                     continue;
                 }
 
-                var userRolesFromDb = await _roleRepository.ToListProjectedDistinctAsync(
+                var userRolesFromDb = await roleRepository.ToListProjectedDistinctAsync(
                     new UserRoleKeysInAppByAppIdAndUserId(app.Value.MainApp.Id, userId), cancellationToken);
 
                 if (userRolesFromDb.Any())

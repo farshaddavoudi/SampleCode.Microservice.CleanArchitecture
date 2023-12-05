@@ -3,18 +3,11 @@ using Serilog.Context;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Middlewares;
 
-public class AddCorrelationIdToSerilogContextMiddleware : IMiddleware
+public class AddCorrelationIdToSerilogContextMiddleware(ICorrelationIdManager correlationIdManager) : IMiddleware
 {
-    private readonly ICorrelationIdManager _correlationIdManager;
-
-    public AddCorrelationIdToSerilogContextMiddleware(ICorrelationIdManager correlationIdManager)
-    {
-        _correlationIdManager = correlationIdManager;
-    }
-
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        using (LogContext.PushProperty("CorrelationId", _correlationIdManager.Get()))
+        using (LogContext.PushProperty("CorrelationId", correlationIdManager.Get()))
         {
             await next(context);
         }

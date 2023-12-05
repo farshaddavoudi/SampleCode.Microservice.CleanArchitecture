@@ -7,25 +7,12 @@ using SampleMicroserviceApp.Identity.Application.CQRS.User.Commands.RegisterRahk
 
 namespace SampleMicroserviceApp.Identity.Web.API.Controllers.User;
 
-public class AuthController : BaseApiController
+public class AuthController(IMediator mediator, AppSettings appSettings) : BaseApiController
 {
-    private readonly IMediator _mediator;
-    private readonly AppSettings _appSettings;
-
-    #region ctor
-
-    public AuthController(IMediator mediator, AppSettings appSettings)
-    {
-        _mediator = mediator;
-        _appSettings = appSettings;
-    }
-
-    #endregion
-
     [HttpPost, AllowAnonymous]
     public async Task<IActionResult> Login(LoginCommand command, CancellationToken cancellationToken)
     {
-        var loginResult = await _mediator.Send(command, cancellationToken);
+        var loginResult = await mediator.Send(command, cancellationToken);
 
         return Ok(loginResult);
     }
@@ -33,12 +20,12 @@ public class AuthController : BaseApiController
     [HttpPost, AllowAnonymous]
     public async Task<IActionResult> GenerateNewToken(CancellationToken cancellationToken)
     {
-        if (HttpContext.Request.Headers.TryGetValue(_appSettings.AuthSettings!.RefreshTokenHeaderName,
+        if (HttpContext.Request.Headers.TryGetValue(appSettings.AuthSettings!.RefreshTokenHeaderName,
                out var refreshToken))
         {
             GenerateNewTokenCommand command = new(null, refreshToken);
 
-            var tokenResult = await _mediator.Send(command, cancellationToken);
+            var tokenResult = await mediator.Send(command, cancellationToken);
 
             return Ok(tokenResult);
         }
@@ -50,7 +37,7 @@ public class AuthController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> RegisterRahkaranUser(RegisterRahkaranUserCommand command, CancellationToken cancellationToken)
     {
-        await _mediator.Send(command, cancellationToken);
+        await mediator.Send(command, cancellationToken);
 
         return NoContent();
     }
@@ -59,7 +46,7 @@ public class AuthController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> KickOutUser(KickOutUserCommand command, CancellationToken cancellationToken)
     {
-        await _mediator.Send(command, cancellationToken);
+        await mediator.Send(command, cancellationToken);
 
         return NoContent();
     }
@@ -67,7 +54,7 @@ public class AuthController : BaseApiController
     [HttpGet("{clientAppKey}")]
     public async Task<IActionResult> GetClientAppUserAllClaims(string clientAppKey, CancellationToken cancellationToken)
     {
-        var userClaims = await _mediator.Send(new GetClientAppUserAllClaimsQuery(clientAppKey), cancellationToken);
+        var userClaims = await mediator.Send(new GetClientAppUserAllClaimsQuery(clientAppKey), cancellationToken);
 
         return Ok(userClaims);
     }

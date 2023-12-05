@@ -1,24 +1,13 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Controllers.App;
 
-public class HangfireJobsController : BaseApiController
+public class HangfireJobsController(IAppBackgroundJobsService appBackgroundJobsService) : BaseApiController
 {
-    private readonly IAppBackgroundJobsService _appBackgroundJobsService;
-
-    #region ctor
-    public HangfireJobsController(IAppBackgroundJobsService appBackgroundJobsService)
-    {
-        _appBackgroundJobsService = appBackgroundJobsService;
-    }
-    #endregion
-
     [HttpPost]
     public IActionResult AddOrUpdateSyncUsersWithRahkaranJob()
     {
-        _appBackgroundJobsService.SyncUsersWithRahkaran();
+        appBackgroundJobsService.SyncUsersWithRahkaran();
 
         return NoContent();
     }

@@ -1,31 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.CQRS.User.DTOs;
 using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
 using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Extensions;
 using SampleMicroserviceApp.Identity.Domain.Utilities;
+using System.Security.Claims;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.UserIdentity;
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService(
+    IHttpContextAccessor httpContextAccessor,
+    CryptoUtility cryptoUtility,
+    AppSettings appSettings
+    ) : ICurrentUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly CryptoUtility _cryptoUtility;
-    private readonly AppSettings _appSettings;
-
-    #region ctor
-
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor, CryptoUtility cryptoUtility, AppSettings appSettings)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _cryptoUtility = cryptoUtility;
-        _appSettings = appSettings;
-    }
-
-    #endregion
-
     public UserMiniDto? User()
     {
         if (IsAuthenticated() is false)
@@ -46,7 +35,7 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated()
     {
-        return _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+        return httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
     }
 
     public bool IsAdmin()
@@ -61,12 +50,12 @@ public class CurrentUserService : ICurrentUserService
         if (IsAuthenticated() is false)
             throw new UnauthorizedAccessException("Current user is not logged in");
 
-        var encryptedUserId = _httpContextAccessor.HttpContext!.User.Claims.First(i => i.Type == ClaimTypes.NameIdentifier).Value;
+        var encryptedUserId = httpContextAccessor.HttpContext!.User.Claims.First(i => i.Type == ClaimTypes.NameIdentifier).Value;
 
         if (string.IsNullOrWhiteSpace(encryptedUserId))
             throw new UnauthorizedAccessException("Invalid user");
 
-        var userId = _cryptoUtility.FromEncryptedBase64String(encryptedUserId, _appSettings.AuthSettings!.UserIdEncryptionKey);
+        var userId = cryptoUtility.FromEncryptedBase64String(encryptedUserId, appSettings.AuthSettings!.UserIdEncryptionKey);
 
         return userId.ToInt();
     }
@@ -80,7 +69,7 @@ public class CurrentUserService : ICurrentUserService
 
     private string GetClaimValueFromJwtToken(string claimType)
     {
-        var claimValue = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(i => i.Type == claimType)?.Value;
+        var claimValue = httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(i => i.Type == claimType)?.Value;
 
         return claimValue ?? string.Empty;
     }

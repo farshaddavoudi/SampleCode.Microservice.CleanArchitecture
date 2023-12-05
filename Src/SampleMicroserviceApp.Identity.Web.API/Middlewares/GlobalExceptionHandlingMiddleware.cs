@@ -1,26 +1,16 @@
-﻿using System.Net;
-using System.Text.Json;
-using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.Common.Exceptions;
+using System.Net;
+using System.Text.Json;
 using UnauthorizedAccessException = SampleMicroserviceApp.Identity.Application.Common.Exceptions.UnauthorizedAccessException;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Middlewares;
 
-public class GlobalExceptionHandlingMiddleware : IMiddleware
+public class GlobalExceptionHandlingMiddleware(
+    ILogger<GlobalExceptionHandlingMiddleware> logger,
+    ICorrelationIdManager correlationIdManager)
+    : IMiddleware
 {
-    private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
-    private readonly ICorrelationIdManager _correlationIdManager;
-
-    #region ctor
-
-    public GlobalExceptionHandlingMiddleware(ILogger<GlobalExceptionHandlingMiddleware> logger, ICorrelationIdManager correlationIdManager)
-    {
-        _logger = logger;
-        _correlationIdManager = correlationIdManager;
-    }
-
-    #endregion
-
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
@@ -33,7 +23,7 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
             // It is global so it can be from DB error, service error or controller error 
             var exceptionResult = await HandleExceptionAsync(context, ex);
 
-            _logger.LogError(ex, "{exceptionResult}", exceptionResult);
+            logger.LogError(ex, "{exceptionResult}", exceptionResult);
         }
     }
 
@@ -80,7 +70,7 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
         {
             Message = message,
             StatusCode = (int)statusCode,
-            CorrelationId = _correlationIdManager.Get(),
+            CorrelationId = correlationIdManager.Get(),
 #if DEBUG
             ExceptionMessage = ex.Message,
             StackTrace = stackTrace

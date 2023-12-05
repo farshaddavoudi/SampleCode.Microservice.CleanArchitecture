@@ -19,29 +19,18 @@ public class CreateOrUpdateRoleCommand : IRequest
 }
 
 // Handler
-public class CreateOrUpdateRoleCommandHandler : IRequestHandler<CreateOrUpdateRoleCommand>
+public class CreateOrUpdateRoleCommandHandler(
+    IMapper mapper,
+    IRepository<RoleEntity> roleRepository,
+    IRepository<ApplicationEntity> applicationRepository
+    ) : IRequestHandler<CreateOrUpdateRoleCommand>
 {
-    private readonly IMapper _mapper;
-    private readonly IRepository<RoleEntity> _roleRepository;
-    private readonly IRepository<ApplicationEntity> _applicationRepository;
-
-    #region ctor
-
-    public CreateOrUpdateRoleCommandHandler(IMapper mapper, IRepository<RoleEntity> roleRepository, IRepository<ApplicationEntity> applicationRepository)
-    {
-        _mapper = mapper;
-        _roleRepository = roleRepository;
-        _applicationRepository = applicationRepository;
-    }
-
-    #endregion
-
     public async Task Handle(CreateOrUpdateRoleCommand request, CancellationToken cancellationToken)
     {
         if (request.Id is null) //=Add
         {
             // Get the app
-            var app = await _applicationRepository.GetByIdAsync(request.ApplicationId, cancellationToken);
+            var app = await applicationRepository.GetByIdAsync(request.ApplicationId, cancellationToken);
 
             if (app is null)
                 throw new BadRequestException("The application is invalid");
@@ -49,16 +38,16 @@ public class CreateOrUpdateRoleCommandHandler : IRequestHandler<CreateOrUpdateRo
             request.Key = $"{app.Key}_{request.Key}";
 
             // Check the Key to be repetitive
-            var isRoleWithSameKeyExists = await _roleRepository.AnyAsync(
+            var isRoleWithSameKeyExists = await roleRepository.AnyAsync(
                     new RoleByKeySpec(request.Key), cancellationToken);
 
             if (isRoleWithSameKeyExists)
                 throw new BusinessLogicException("The app key cannot be repetitive. A role with same key already exists.");
 
             // Insert new Role
-            var roleToAdd = _mapper.Map<RoleEntity>(request);
+            var roleToAdd = mapper.Map<RoleEntity>(request);
 
-            await _roleRepository.AddAsync(roleToAdd, cancellationToken);
+            await roleRepository.AddAsync(roleToAdd, cancellationToken);
         }
         else //=Update
         {

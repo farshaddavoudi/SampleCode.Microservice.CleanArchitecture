@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
-using System.Text.Json;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.CQRS.User.DTOs;
 using SampleMicroserviceApp.Identity.Application.CQRS.User.Specifications;
@@ -8,44 +7,33 @@ using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
 using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Entities.User;
 using SampleMicroserviceApp.Identity.Domain.Extensions;
+using System.Text.Json;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Caching;
 
-public class UserCacheService : IUserCacheService
+public class UserCacheService(
+    IDistributedCache distributedCache,
+    IRepository<UserEntity> userRepository,
+    IMapper mapper,
+    AppSettings appSettings
+    ) : IUserCacheService
 {
-    private readonly IDistributedCache _distributedCache;
-    private readonly IRepository<UserEntity> _userRepository;
-    private readonly IMapper _mapper;
-    private readonly AppSettings _appSettings;
-
-    #region ctor
-
-    public UserCacheService(IDistributedCache distributedCache, IRepository<UserEntity> userRepository, IMapper mapper, AppSettings appSettings)
-    {
-        _distributedCache = distributedCache;
-        _userRepository = userRepository;
-        _mapper = mapper;
-        _appSettings = appSettings;
-    }
-
-    #endregion
-
     public async Task SetUserAsync(UserMiniDto user, CancellationToken cancellationToken)
     {
-        await _distributedCache.SetStringAsync(CacheKeyConst.User(user.Id),
+        await distributedCache.SetStringAsync(CacheKeyConst.User(user.Id),
             JsonSerializer.Serialize(user),
             cancellationToken);
     }
 
     public async Task<UserMiniDto?> GetUserAsync(int userId, CancellationToken cancellationToken)
     {
-        var userSerialized = await _distributedCache.GetStringAsync(CacheKeyConst.User(userId), cancellationToken);
+        var userSerialized = await distributedCache.GetStringAsync(CacheKeyConst.User(userId), cancellationToken);
 
         UserMiniDto? user;
 
         if (string.IsNullOrWhiteSpace(userSerialized))
         {
-            user = await _userRepository.FirstOrDefaultProjectedAsync<UserMiniDto>(
+            user = await userRepository.FirstOrDefaultProjectedAsync<UserMiniDto>(
                 new UserByIdSpec(userId), cancellationToken);
 
             if (user is not null)
@@ -65,9 +53,9 @@ public class UserCacheService : IUserCacheService
     {
         // Save both user as key and RefreshToken as key so we can query in reverse order
 
-        DistributedCacheEntryOptions options = new() { AbsoluteExpirationRelativeToNow = _appSettings.AuthSettings!.RefreshTokenTtl };
-        await _distributedCache.SetStringAsync(CacheKeyConst.UserRefreshToken(userId), refreshToken, options, cancellationToken);
-        await _distributedCache.SetStringAsync(CacheKeyConst.UserRefreshToken(refreshToken), userId.ToString(), options, cancellationToken);
+        DistributedCacheEntryOptions options = new() { AbsoluteExpirationRelativeToNow = appSettings.AuthSettings!.RefreshTokenTtl };
+        await distributedCache.SetStringAsync(CacheKeyConst.UserRefreshToken(userId), refreshToken, options, cancellationToken);
+        await distributedCache.SetStringAsync(CacheKeyConst.UserRefreshToken(refreshToken), userId.ToString(), options, cancellationToken);
     }
 
     public async Task RemoveRefreshToken(int userId, CancellationToken cancellationToken)
@@ -76,21 +64,21 @@ public class UserCacheService : IUserCacheService
 
         if (refreshToken.IsNotNullOrWhitespace())
         {
-            await _distributedCache.RemoveAsync(CacheKeyConst.UserRefreshToken(refreshToken!), cancellationToken);
+            await distributedCache.RemoveAsync(CacheKeyConst.UserRefreshToken(refreshToken!), cancellationToken);
         }
 
-        await _distributedCache.RemoveAsync(CacheKeyConst.UserRefreshToken(userId), cancellationToken);
+        await distributedCache.RemoveAsync(CacheKeyConst.UserRefreshToken(userId), cancellationToken);
     }
 
     public async Task<int?> GetUserIdByRefreshToken(string refreshToken, CancellationToken cancellationToken)
     {
-        var userIdStr = await _distributedCache.GetStringAsync(CacheKeyConst.UserRefreshToken(refreshToken), cancellationToken);
+        var userIdStr = await distributedCache.GetStringAsync(CacheKeyConst.UserRefreshToken(refreshToken), cancellationToken);
 
         return userIdStr?.ToInt(true);
     }
 
     public async Task<string?> GetRefreshTokenByUserId(int userId, CancellationToken cancellationToken)
     {
-        return await _distributedCache.GetStringAsync(CacheKeyConst.UserRefreshToken(userId), cancellationToken);
+        return await distributedCache.GetStringAsync(CacheKeyConst.UserRefreshToken(userId), cancellationToken);
     }
 }

@@ -9,25 +9,12 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.User.Queries.GetAllUse
 public record GetAllUsersQuery : IRequest<IQueryable<UserDto>>;
 
 // Handler
-public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IQueryable<UserDto>>
+public class GetAllUsersQueryHandler(IRepository<UserEntity> userRepository, IMapper mapper) : IRequestHandler<GetAllUsersQuery, IQueryable<UserDto>>
 {
-    private readonly IRepository<UserEntity> _userRepository;
-    private readonly IMapper _mapper;
-
-    #region ctor
-
-    public GetAllUsersQueryHandler(IRepository<UserEntity> userRepository, IMapper mapper)
-    {
-        _userRepository = userRepository;
-        _mapper = mapper;
-    }
-
-    #endregion
-
     public Task<IQueryable<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
-        var queryable = _userRepository.AsQueryable()
-            .ProjectTo<UserDto>(_mapper.ConfigurationProvider);
+        var queryable = userRepository.AsQueryable()
+            .ProjectTo<UserDto>(mapper.ConfigurationProvider);
 
         return Task.FromResult(queryable);
     }

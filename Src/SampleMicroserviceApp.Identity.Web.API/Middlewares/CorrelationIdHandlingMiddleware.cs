@@ -2,17 +2,9 @@
 
 namespace SampleMicroserviceApp.Identity.Web.API.Middlewares;
 
-public class CorrelationIdHandlingMiddleware : IMiddleware
+public class CorrelationIdHandlingMiddleware(ICorrelationIdManager correlationIdManager) : IMiddleware
 {
-    private readonly ICorrelationIdManager _correlationIdManager;
     private const string CorrelationIdHeaderName = "X-Correlation-ID";
-
-    #region ctor
-    public CorrelationIdHandlingMiddleware(ICorrelationIdManager correlationIdManager)
-    {
-        _correlationIdManager = correlationIdManager;
-    }
-    #endregion
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -31,13 +23,13 @@ public class CorrelationIdHandlingMiddleware : IMiddleware
 
             if (string.IsNullOrWhiteSpace(correlationId) is false)
             {
-                _correlationIdManager.Set(correlationId);
+                correlationIdManager.Set(correlationId);
 
                 return correlationId;
             }
         }
 
-        return _correlationIdManager.Get();
+        return correlationIdManager.Get();
     }
 
     private void AddCorrelationIdToResponse(HttpContext context, string correlationId)

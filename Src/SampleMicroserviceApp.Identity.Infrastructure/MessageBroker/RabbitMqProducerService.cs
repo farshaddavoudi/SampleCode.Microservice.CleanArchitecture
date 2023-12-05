@@ -1,30 +1,19 @@
 ﻿using RabbitMQ.Client;
-using System.Text;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
 using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Shared;
+using System.Text;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.MessageBroker;
 
-public class RabbitMqProducerService : IMessageBrokerProducerService
+public class RabbitMqProducerService(AppSettings appSettings) : IMessageBrokerProducerService
 {
-    private readonly AppSettings _appSettings;
-
-    #region ctor
-
-    public RabbitMqProducerService(AppSettings appSettings)
-    {
-        _appSettings = appSettings;
-    }
-
-    #endregion
-
     public void PublishUserEdited(int userId, string messageRouteKey)
     {
         var factory = new ConnectionFactory
         {
-            Uri = new Uri(_appSettings.RabbitMqSettings!.Uri),
+            Uri = new Uri(appSettings.RabbitMqSettings!.Uri),
             ClientProvidedName = AppMetadataConst.SolutionName
         };
 

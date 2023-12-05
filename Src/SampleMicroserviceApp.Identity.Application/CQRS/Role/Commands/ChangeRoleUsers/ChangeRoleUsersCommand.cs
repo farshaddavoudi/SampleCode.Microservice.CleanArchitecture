@@ -8,26 +8,15 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.Role.Commands.ChangeRo
 public record ChangeRoleUsersCommand(int RoleId, List<int> UserIds) : IRequest;
 
 // Handler
-public class ChangeRoleUsersCommandHandler : IRequestHandler<ChangeRoleUsersCommand>
+public class ChangeRoleUsersCommandHandler(
+    IRepository<UserRoleEntity> userRoleRepository,
+    IUnitOfWork unitOfWork,
+    IMediator mediator
+    ) : IRequestHandler<ChangeRoleUsersCommand>
 {
-    private readonly IRepository<UserRoleEntity> _userRoleRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMediator _mediator;
-
-    #region ctor
-
-    public ChangeRoleUsersCommandHandler(IRepository<UserRoleEntity> userRoleRepository, IUnitOfWork unitOfWork, IMediator mediator)
-    {
-        _userRoleRepository = userRoleRepository;
-        _unitOfWork = unitOfWork;
-        _mediator = mediator;
-    }
-
-    #endregion
-
     public async Task Handle(ChangeRoleUsersCommand request, CancellationToken cancellationToken)
     {
-        var allPriorRoleUsers = await _userRoleRepository.ToListAsync(
+        var allPriorRoleUsers = await userRoleRepository.ToListAsync(
                 new UserRolePairsByRoleIdSpec(request.RoleId), cancellationToken);
 
         foreach (var requestUserId in request.UserIds)
@@ -37,24 +26,24 @@ public class ChangeRoleUsersCommandHandler : IRequestHandler<ChangeRoleUsersComm
 
             var newUserForRole = new UserRoleEntity { RoleId = request.RoleId, UserId = requestUserId };
 
-            await _userRoleRepository.AddAsync(newUserForRole, cancellationToken, false);
+            await userRoleRepository.AddAsync(newUserForRole, cancellationToken, false);
         }
 
         foreach (var priorUser in allPriorRoleUsers)
         {
             if (request.UserIds.Any(cId => cId == priorUser.UserId) is false)
             {
-                await _userRoleRepository.DeleteAsync(priorUser, cancellationToken, false);
+                await userRoleRepository.DeleteAsync(priorUser, cancellationToken, false);
             }
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var affectedUserIds = new List<int>();
         affectedUserIds.AddRange(request.UserIds);
         affectedUserIds.AddRange(allPriorRoleUsers.Select(x => x.UserId));
         affectedUserIds = affectedUserIds.Distinct().ToList();
 
-        await _mediator.Publish(new RoleUsersChangedEvent(request.RoleId, affectedUserIds), cancellationToken);
+        await mediator.Publish(new RoleUsersChangedEvent(request.RoleId, affectedUserIds), cancellationToken);
     }
 }

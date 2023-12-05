@@ -8,24 +8,13 @@ using SampleMicroserviceApp.Identity.Domain.Entities.Contracts;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.Repository;
 
-public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEntity : class, IEntity
+public class Repository<TEntity>(
+    AppDbContext dbContext,
+    IUnitOfWork unitOfWork,
+    IMapper mapper
+    ) : IDisposable, IRepository<TEntity> where TEntity : class, IEntity
 {
-    private readonly AppDbContext _dbContext;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly DbSet<TEntity> _dbSet;
-    private readonly IMapper _mapper;
-
-    #region ctor
-
-    public Repository(AppDbContext dbContext, IUnitOfWork unitOfWork, IMapper mapper)
-    {
-        _dbContext = dbContext;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-        _dbSet = dbContext.Set<TEntity>();
-    }
-
-    #endregion
+    private readonly DbSet<TEntity> _dbSet = dbContext.Set<TEntity>();
 
     public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
@@ -65,7 +54,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
     public async Task<List<TMapperDestination>> ToListProjectedAsync<TMapperDestination>(CancellationToken cancellationToken)
     {
         return await _dbSet
-            .ProjectTo<TMapperDestination>(_mapper.ConfigurationProvider)
+            .ProjectTo<TMapperDestination>(mapper.ConfigurationProvider)
             .Distinct()
             .ToListAsync(cancellationToken);
     }
@@ -73,7 +62,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
     public async Task<List<TMapperDestination>> ToListProjectedDistinctAsync<TMapperDestination>(CancellationToken cancellationToken)
     {
         return await _dbSet
-            .ProjectTo<TMapperDestination>(_mapper.ConfigurationProvider)
+            .ProjectTo<TMapperDestination>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
 
@@ -85,7 +74,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         );
 
         return await queryResult
-            .ProjectTo<TMapperDestination>(_mapper.ConfigurationProvider)
+            .ProjectTo<TMapperDestination>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
 
@@ -97,7 +86,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         );
 
         return await queryResult
-            .ProjectTo<TMapperDestination>(_mapper.ConfigurationProvider)
+            .ProjectTo<TMapperDestination>(mapper.ConfigurationProvider)
             .Distinct()
             .ToListAsync(cancellationToken);
     }
@@ -163,7 +152,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         );
 
         return await queryResult
-            .ProjectTo<TMapperDestination>(_mapper.ConfigurationProvider)
+            .ProjectTo<TMapperDestination>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -192,7 +181,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         await _dbSet.AddAsync(itemToAdd, cancellationToken);
 
         if (saveChanges)
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public void Add(TEntity itemToAdd, bool saveChanges = true)
@@ -200,7 +189,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         _dbSet.Add(itemToAdd);
 
         if (saveChanges)
-            _unitOfWork.SaveChange();
+            unitOfWork.SaveChange();
     }
 
     public async Task AddRangeAsync(IEnumerable<TEntity> entitiesToAdd, CancellationToken cancellationToken, bool saveChanges = true)
@@ -208,7 +197,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         await _dbSet.AddRangeAsync(entitiesToAdd, cancellationToken);
 
         if (saveChanges)
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public void AddRange(IEnumerable<TEntity> entitiesToAdd, bool saveChanges = true)
@@ -216,7 +205,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         _dbSet.AddRange(entitiesToAdd);
 
         if (saveChanges)
-            _unitOfWork.SaveChange();
+            unitOfWork.SaveChange();
     }
 
     public async Task UpdateAsync(TEntity itemToUpdate, CancellationToken cancellationToken, bool saveChanges = true)
@@ -224,7 +213,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         _dbSet.Update(itemToUpdate);
 
         if (saveChanges)
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public void Update(TEntity itemToUpdate, bool saveChanges = true)
@@ -232,7 +221,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         _dbSet.Update(itemToUpdate);
 
         if (saveChanges)
-            _unitOfWork.SaveChange();
+            unitOfWork.SaveChange();
     }
 
     public async Task DeleteAsync(TEntity itemToDelete, CancellationToken cancellationToken, bool saveChanges = true)
@@ -249,7 +238,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         }
 
         if (saveChanges)
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public void Delete(TEntity itemToDelete, bool saveChanges = true)
@@ -266,7 +255,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         }
 
         if (saveChanges)
-            _unitOfWork.SaveChange();
+            unitOfWork.SaveChange();
     }
 
     private bool _disposed;
@@ -277,7 +266,7 @@ public class Repository<TEntity> : IDisposable, IRepository<TEntity> where TEnti
         {
             if (disposing)
             {
-                _dbContext.Dispose();
+                dbContext.Dispose();
             }
         }
 
