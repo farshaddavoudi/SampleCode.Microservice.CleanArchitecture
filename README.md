@@ -46,6 +46,7 @@ While *AutoMapper* is used, consider other libraries or manual mapping for bette
 - Use the `.Send()` method to dispatch requests to appropriate handlers.
 - Use the `.Publish()` method to leverage *MediatR*'s notification feature for *Eventing*
 - Utilize *FluentValidation* for validating requests configured in *MediatR Pipeline Behaviours*.
+- Make the database operations transactional in *MediatR*'s command handlers again using a *Pipeline Behaviour*
   
 ## Authentication:
 
