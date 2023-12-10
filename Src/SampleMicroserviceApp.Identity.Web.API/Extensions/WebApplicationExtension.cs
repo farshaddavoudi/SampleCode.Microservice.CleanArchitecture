@@ -2,11 +2,9 @@
 using Audit.WebApi;
 using Hangfire;
 using Hangfire.Dashboard;
-using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
-using SampleMicroserviceApp.Identity.Domain.Constants;
 using SampleMicroserviceApp.Identity.Domain.Shared;
+using SampleMicroserviceApp.Identity.Infrastructure.BackgroundJobs;
 using SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore;
-using SampleMicroserviceApp.Identity.Web.API.ActionFilter;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Extensions;
 
