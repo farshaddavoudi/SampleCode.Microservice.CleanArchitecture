@@ -1,4 +1,4 @@
-﻿namespace SampleMicroserviceApp.Identity.Domain.Constants;
+﻿namespace SampleMicroserviceApp.Identity.Infrastructure.BackgroundJobs;
 
 public static class HangfireConst
 {

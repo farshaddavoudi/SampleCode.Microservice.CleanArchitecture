@@ -1,4 +1,5 @@
 ﻿using SampleMicroserviceApp.Identity.Domain.Extensions;
+using SampleMicroserviceApp.Identity.Infrastructure.BackgroundJobs;
 
 namespace SampleMicroserviceApp.Identity.Web.API.Middlewares;
 

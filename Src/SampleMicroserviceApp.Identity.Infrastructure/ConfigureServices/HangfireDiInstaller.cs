@@ -2,7 +2,7 @@
 using Hangfire.PostgreSql;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
-using SampleMicroserviceApp.Identity.Domain.Constants;
+using SampleMicroserviceApp.Identity.Infrastructure.BackgroundJobs;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.ConfigureServices;
 
