@@ -36,6 +36,7 @@ While *AutoMapper* is used, consider other libraries or manual mapping for bette
 - SQL Server [main db]
 - EF Core Code First configured with Fluent API
 - Generic Repository pattern with Unit of Work and Specification Pattern
+- ReadOnlyRepository and Repository are separated
 - Dapper [configured with DI; provided a simple use case as an example]
 - PostgreSQL [store Hangfire jobs]
 - MongoDB [store API Request/Response and EF Core audit logs]
