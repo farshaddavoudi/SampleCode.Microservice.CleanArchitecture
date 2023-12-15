@@ -9,7 +9,7 @@ using SampleMicroserviceApp.Identity.Domain.Extensions;
 namespace SampleMicroserviceApp.Identity.Application.Services.SyncUsersService;
 
 public class SyncUsersService(
-    IRepository<UserRahkaranViewEntity> userRahkaranViewRepository,
+    IReadOnlyRepository<UserRahkaranViewEntity> userRahkaranViewRepository,
     IRepository<UserEntity> userRepository,
     IUnitOfWork unitOfWork,
     IMapper mapper,

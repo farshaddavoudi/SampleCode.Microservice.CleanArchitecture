@@ -9,7 +9,7 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.Claim.Queries.GetAllCl
 public record GetAllClaimsQuery : IRequest<IQueryable<ClaimDto>>;
 
 // Handler
-public class GetAllClaimsQueryHandler(IMapper mapper, IRepository<ClaimEntity> claimRepository)
+public class GetAllClaimsQueryHandler(IMapper mapper, IReadOnlyRepository<ClaimEntity> claimRepository)
     : IRequestHandler<GetAllClaimsQuery, IQueryable<ClaimDto>>
 {
     public Task<IQueryable<ClaimDto>> Handle(GetAllClaimsQuery request, CancellationToken cancellationToken)

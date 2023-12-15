@@ -9,7 +9,7 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.Role.Queries.GetAllRol
 public record GetAllRolesQuery : IRequest<IQueryable<RoleDto>>;
 
 // Handler
-public class GetAllRolesQueryHandler(IMapper mapper, IRepository<RoleEntity> roleRepository) : IRequestHandler<GetAllRolesQuery, IQueryable<RoleDto>>
+public class GetAllRolesQueryHandler(IMapper mapper, IReadOnlyRepository<RoleEntity> roleRepository) : IRequestHandler<GetAllRolesQuery, IQueryable<RoleDto>>
 {
     public Task<IQueryable<RoleDto>> Handle(GetAllRolesQuery request, CancellationToken cancellationToken)
     {
