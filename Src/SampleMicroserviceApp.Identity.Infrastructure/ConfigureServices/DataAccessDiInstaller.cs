@@ -16,6 +16,7 @@ public class DataAccessDiInstaller : IDiInstaller
     {
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAppDbContext, AppDbContext>();
 
         services.AddDbContext<AppDbContext>(options =>
         {
