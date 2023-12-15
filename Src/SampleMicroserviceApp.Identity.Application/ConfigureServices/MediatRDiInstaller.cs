@@ -1,5 +1,4 @@
-﻿using MediatR;
-using MediatR.NotificationPublishers;
+﻿using MediatR.NotificationPublishers;
 using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.Common.PipelineBehaviours;
 using SampleMicroserviceApp.Identity.Domain.ConfigurationSettings;
@@ -20,6 +19,7 @@ public class MediatRDiInstaller : IDiInstaller
 
             // Pipelines order matters. MediatR executes them from top to bottom 
             configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>), ServiceLifetime.Scoped);
+            configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DbTransactionBehaviour<,>), ServiceLifetime.Scoped);
         });
     }
 }

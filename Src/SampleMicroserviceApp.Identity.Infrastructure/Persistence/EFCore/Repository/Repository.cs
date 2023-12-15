@@ -8,7 +8,7 @@ using SampleMicroserviceApp.Identity.Domain.Entities.Contracts;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.Repository;
 
-public class Repository<TEntity>(
+internal class Repository<TEntity>(
     AppDbContext dbContext,
     IUnitOfWork unitOfWork,
     IMapper mapper

@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Domain;
 using SampleMicroserviceApp.Identity.Domain.Entities.Application;
 using SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.Extensions;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IAppDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -37,5 +39,10 @@ public class AppDbContext : DbContext
         modelBuilder.SeedDefaultUsers();
         modelBuilder.SeedDefaultUserRoles();
         modelBuilder.SeedDefaultClaimsAndRoleClaims();
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        return await Database.BeginTransactionAsync(cancellationToken);
     }
 }
