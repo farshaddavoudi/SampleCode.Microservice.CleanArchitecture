@@ -14,7 +14,8 @@ public class DataAccessDiInstaller : IDiInstaller
 {
     public void InstallServices(IServiceCollection services, AppSettings appSettings)
     {
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyEfRepository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAppDbContext, AppDbContext>();
 

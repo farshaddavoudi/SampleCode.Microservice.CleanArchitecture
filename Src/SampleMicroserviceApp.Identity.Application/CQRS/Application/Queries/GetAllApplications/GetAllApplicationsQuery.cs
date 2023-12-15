@@ -8,7 +8,7 @@ namespace SampleMicroserviceApp.Identity.Application.CQRS.Application.Queries.Ge
 public record GetAllApplicationsQuery : IRequest<List<ApplicationDto>>;
 
 // Handler
-public class GetAllApplicationsQueryHandler(IRepository<ApplicationEntity> applicationRepository, IApplicationCacheService appCacheService)
+public class GetAllApplicationsQueryHandler(IReadOnlyRepository<ApplicationEntity> applicationRepository, IApplicationCacheService appCacheService)
     : IRequestHandler<GetAllApplicationsQuery, List<ApplicationDto>>
 {
     public async Task<List<ApplicationDto>> Handle(GetAllApplicationsQuery request, CancellationToken cancellationToken)
