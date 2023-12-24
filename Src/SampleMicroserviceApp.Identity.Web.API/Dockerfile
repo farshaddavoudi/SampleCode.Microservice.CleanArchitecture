@@ -5,7 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore
-COPY Src/**API/*API.csproj ./
+# TODO: Check
+COPY ../**/*.csproj ./ 
 RUN dotnet restore
 
 

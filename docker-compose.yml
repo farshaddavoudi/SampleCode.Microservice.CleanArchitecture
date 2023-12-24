@@ -1,1 +1,46 @@
-﻿version: '3.8'  services:   api:     build:       context: .       dockerfile: Dockerfile       target: "final"     container_name: api     ports:       - 7185:443       - 5141:80     networks:       #- shared-net       - app-net     environment:        - ASPNETCORE_URLS=https://+;http://+       - ASPNETCORE_HTTPS_PORT=7185       - ASPNETCORE_ENVIRONMENT=Development     volumes:       - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets #For certificate password       - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https/ #For certificate pfx file     #depends_on:        #- db ...  volumes:   db-data:  networks:   app-net:
+﻿version: '3.8'
+
+services:
+  ##### Website & DAPR Sidecar #####
+  api:
+    build:
+      context: ./Src/SampleMicroserviceApp.Identity.Web.API
+      dockerfile: Dockerfile
+      target: "final"
+    container_name: sample-api
+    ports:
+      - 7185:443
+      - 5141:80
+    networks:
+      - shared-net
+    environment: 
+      - ASPNETCORE_URLS=https://+;http://+
+      - ASPNETCORE_HTTPS_PORT=7185
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets #For certificate password
+      - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https/ #For certificate pfx file
+
+  api_dapr:
+    image: "daprio/dapr:1.12.3-rc.2-stablecomponents"
+    command: 
+      [
+        "./dapr",
+        "-app-id",
+        "api", #Check it
+        "-app-port",
+        "80",
+        "-placement-address",
+        "placement:6000",
+        "-config",
+        "/dapr/config.yaml",
+        "-components-path",
+        "/dapr/components"
+      ]
+
+volumes:
+  db-data:
+
+networks:
+  shared-net:
+    external: true
