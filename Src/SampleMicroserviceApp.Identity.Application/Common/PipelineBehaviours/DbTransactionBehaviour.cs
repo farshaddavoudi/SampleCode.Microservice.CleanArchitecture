@@ -2,9 +2,9 @@
 
 namespace SampleMicroserviceApp.Identity.Application.Common.PipelineBehaviours;
 
-public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext) : IPipelineBehavior<TRequest, TRequest> where TRequest : notnull
+public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
-    public async Task<TRequest> Handle(TRequest request, RequestHandlerDelegate<TRequest> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         if (IsNotCommand())
         {
@@ -19,7 +19,7 @@ public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext
             await transaction.CommitAsync(cancellationToken);
             return result;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
