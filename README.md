@@ -83,3 +83,7 @@ While *AutoMapper* is used, consider other libraries or manual mapping for bette
 ## Message Broker: RabbitMQ
 
 Publish messages, such as a user added or changed, so that other services can listen and be notified.
+
+## Applications Runtime: Dapr
+
+Using Dapr to implement the best practices for Microservice architecture using independent building blocks.
