@@ -86,4 +86,4 @@ Publish messages, such as a user added or changed, so that other services can li
 
 ## Applications Runtime: Dapr
 
-Using Dapr to implement the best practices for Microservice architecture using independent building blocks.
+Using Dapr to implement the best practices for Microservice architecture using independent building blocks. For more info and to see an example check this [repo](https://github.com/farshaddavoudi/DevEnvSetup/tree/main/dapr-setup)
