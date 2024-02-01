@@ -1,26 +1,44 @@
 ﻿using FluentValidation;
-using MediatR;
 
 namespace SampleMicroserviceApp.Identity.Application.Common.PipelineBehaviours;
 
-public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class HasResponseValidationBehaviour<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
+    : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly IEnumerable<IValidator<TRequest>> _validators;
-
-    public ValidationBehaviour(IEnumerable<IValidator<TRequest>> validators)
-    {
-        _validators = validators;
-    }
-
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (_validators.Any())
+        var validationBehaviourUtility = new ValidationBehaviourUtility<TRequest, TResponse>();
+
+        return await validationBehaviourUtility.ValidateCommandOrQuery(validators, request, next, cancellationToken);
+    }
+}
+
+public class WithoutResponseValidationBehaviour<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest
+{
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    {
+        var validationBehaviourUtility = new ValidationBehaviourUtility<TRequest, TResponse>();
+
+        return await validationBehaviourUtility.ValidateCommandOrQuery(validators, request, next, cancellationToken);
+    }
+}
+
+public class ValidationBehaviourUtility<TRequest, TResponse>
+{
+    public async Task<TResponse> ValidateCommandOrQuery(IEnumerable<IValidator<TRequest>> validators, TRequest request, RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        var validatorsList = validators.ToList();
+
+        if (validatorsList.Any())
         {
             var context = new ValidationContext<TRequest>(request);
 
             var validationResults = await Task.WhenAll(
-                _validators.Select(v =>
+                validatorsList.Select(v =>
                     v.ValidateAsync(context, cancellationToken)));
 
             var failures = validationResults
@@ -35,3 +53,4 @@ public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TReque
         return await next();
     }
 }
+

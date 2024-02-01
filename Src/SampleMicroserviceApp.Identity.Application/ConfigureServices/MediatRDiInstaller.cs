@@ -18,7 +18,8 @@ public class MediatRDiInstaller : IDiInstaller
             configs.NotificationPublisher = new TaskWhenAllPublisher();
 
             // Pipelines order matters. MediatR executes them from top to bottom 
-            configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>), ServiceLifetime.Scoped);
+            configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HasResponseValidationBehaviour<,>), ServiceLifetime.Scoped);
+            configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(WithoutResponseValidationBehaviour<,>), ServiceLifetime.Scoped);
             configs.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DbTransactionBehaviour<,>), ServiceLifetime.Scoped);
         });
     }

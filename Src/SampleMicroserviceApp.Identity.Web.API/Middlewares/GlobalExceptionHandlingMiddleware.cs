@@ -1,4 +1,5 @@
-﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using FluentValidation;
+using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 using SampleMicroserviceApp.Identity.Application.Common.Exceptions;
 using System.Net;
 using System.Text.Json;
@@ -16,6 +17,37 @@ public class GlobalExceptionHandlingMiddleware(
         try
         {
             await next(context);
+        }
+        catch (ValidationException exception)
+        {
+            List<ErrorDetail> errorDetails = exception.Errors
+                .Select(e => new ErrorDetail
+                {
+                    Field = e.PropertyName,
+                    ErrorMessage = e.ErrorMessage
+                }).ToList();
+
+            var validationErrorCustomMessage = string.Join(" | ", errorDetails.Select(ed => ed.ErrorMessage));
+
+            var error = new ErrorModel
+            {
+                Message = validationErrorCustomMessage,
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                CorrelationId = correlationIdManager.Get(),
+                ErrorDetails = errorDetails,
+#if DEBUG
+                ExceptionMessage = exception.Message,
+                StackTrace = exception.StackTrace
+#endif
+            };
+
+            var exceptionResult = JsonSerializer.Serialize(error);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            await context.Response.WriteAsync(exceptionResult);
+
+            logger.LogError(exception, "{exceptionResult}", exceptionResult);
         }
         catch (Exception ex)
         {
