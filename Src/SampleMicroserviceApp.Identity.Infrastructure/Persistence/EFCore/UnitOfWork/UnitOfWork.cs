@@ -1,4 +1,5 @@
-﻿using SampleMicroserviceApp.Identity.Application.Common.Contracts;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using SampleMicroserviceApp.Identity.Application.Common.Contracts;
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.UnitOfWork;
 
@@ -12,6 +13,16 @@ public class UnitOfWork(AppDbContext dbContext) : IUnitOfWork
     public void SaveChange()
     {
         dbContext.SaveChanges();
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        return await dbContext.Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public void ClearChangeTracker()
+    {
+        dbContext.ChangeTracker.Clear();
     }
 
     private bool _disposed;
