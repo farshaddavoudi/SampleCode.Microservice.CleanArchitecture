@@ -7,12 +7,8 @@ using SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore.Extension
 
 namespace SampleMicroserviceApp.Identity.Infrastructure.Persistence.EFCore;
 
-public class AppDbContext : DbContext, IAppDbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Auto Register all Entities
@@ -39,10 +35,5 @@ public class AppDbContext : DbContext, IAppDbContext
         modelBuilder.SeedDefaultUsers();
         modelBuilder.SeedDefaultUserRoles();
         modelBuilder.SeedDefaultClaimsAndRoleClaims();
-    }
-
-    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
-    {
-        return await Database.BeginTransactionAsync(cancellationToken);
     }
 }

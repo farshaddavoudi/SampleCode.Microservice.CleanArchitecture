@@ -17,7 +17,6 @@ public class DataAccessDiInstaller : IDiInstaller
         services.AddScoped(typeof(IReadOnlyRepository<>), typeof(ReadOnlyEfRepository<>));
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IAppDbContext, AppDbContext>();
 
         services.AddDbContext<AppDbContext>(options =>
         {

@@ -2,7 +2,7 @@
 
 namespace SampleMicroserviceApp.Identity.Application.Common.PipelineBehaviours;
 
-public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+public class DbTransactionBehaviour<TRequest, TResponse>(IUnitOfWork unitOfWork) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
@@ -11,7 +11,7 @@ public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext
             return await next();
         }
 
-        await using var transaction = await dbContext.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -22,6 +22,7 @@ public class DbTransactionBehaviour<TRequest, TResponse>(IAppDbContext dbContext
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
+            unitOfWork.ClearChangeTracker();
             throw;
         }
     }
