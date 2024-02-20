@@ -33,7 +33,7 @@ public class UserCacheService(
 
         if (string.IsNullOrWhiteSpace(userSerialized))
         {
-            user = await userRepository.FirstOrDefaultProjectedAsync<UserMiniDto>(
+            user = await userRepository.FirstOrDefaultAsync<UserMiniDto>(
                 new UserByIdSpec(userId), cancellationToken);
 
             if (user is not null)

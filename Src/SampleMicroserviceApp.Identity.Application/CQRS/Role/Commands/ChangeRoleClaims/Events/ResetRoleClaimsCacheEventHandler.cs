@@ -15,10 +15,10 @@ public class ResetRoleClaimsCacheEventHandler(
 {
     public async Task Handle(RoleClaimsChangedEvent notification, CancellationToken cancellationToken)
     {
-        var roleKey = await roleRepository.FirstOrDefaultProjectedAsync(
+        var roleKey = await roleRepository.FirstOrDefaultAsync(
             new RoleKeyById(notification.RoleId), cancellationToken);
 
-        var claimKeys = await claimRepository.ToListProjectedAsync(
+        var claimKeys = await claimRepository.ToListAsync(
                 new ClaimKeyWithinIdsSpec(notification.ClaimIds), cancellationToken);
 
         if (claimKeys.Any())

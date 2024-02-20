@@ -11,39 +11,72 @@ public interface IReadOnlyRepository<TEntity> where TEntity : class, IEntity
 
     IQueryable<TEntity> AsQueryable(Specification<TEntity> specification);
 
+    /// <summary>
+    /// Filter using specification expression without projection
+    /// </summary>
+    /// <param name="specification"> Specification Expression </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> Entity Collection </returns>
     Task<List<TEntity>> ToListAsync(Specification<TEntity> specification, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// A simple ToList without any filtering and projection
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns> Entity Collection </returns>
     Task<List<TEntity>> ToListAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using AutoMapper .ProjectTo extension method
+    /// Projection using AutoMapper .ProjectTo queryable extension method without any filtering
     /// </summary>
-    Task<List<TMapperDestination>> ToListProjectedAsync<TMapperDestination>(CancellationToken cancellationToken);
+    /// <typeparam name="TAutoMapperDestination"> AutoMapper Destination Type </typeparam>
+    /// <param name="cancellationToken"></param>
+    /// <returns> AutoMapper Destination Type Collection </returns>
+    Task<List<TAutoMapperDestination>> ToListAsync<TAutoMapperDestination>(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using AutoMapper .ProjectTo extension method along using .Distinct method
+    /// Projection using AutoMapper .ProjectTo queryable extension method without any filtering along using .Distinct method
     /// </summary>
-    Task<List<TMapperDestination>> ToListProjectedDistinctAsync<TMapperDestination>(CancellationToken cancellationToken);
+    /// <typeparam name="TAutoMapperDestination"> AutoMapper Destination Type </typeparam>
+    /// <param name="cancellationToken"></param>
+    /// <returns> AutoMapper Destination Type Distinct Collection </returns>
+    Task<List<TAutoMapperDestination>> ToListDistinctAsync<TAutoMapperDestination>(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using AutoMapper .ProjectTo extension method
+    /// Projection using AutoMapper .ProjectTo queryable extension method filter by specification expression
     /// </summary>
-    Task<List<TMapperDestination>> ToListProjectedAsync<TMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
+    /// <typeparam name="TAutoMapperDestination"> AutoMapper Destination Type </typeparam>
+    /// <param name="specification"> Specification Expression </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> AutoMapper Destination Type Collection </returns>
+    Task<List<TAutoMapperDestination>> ToListAsync<TAutoMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using AutoMapper .ProjectTo extension method along using .Distinct method
+    /// Projection using AutoMapper .ProjectTo queryable extension method filter by specification expression along using .Distinct method
     /// </summary>
-    Task<List<TMapperDestination>> ToListProjectedDistinctAsync<TMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
+    /// <typeparam name="TAutoMapperDestination"> AutoMapper Destination Type </typeparam>
+    /// <param name="specification"> Specification Expression </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> AutoMapper Destination Type Distinct Collection </returns>
+    Task<List<TAutoMapperDestination>> ToListDistinctAsync<TAutoMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using Spec output
+    ///  Filter along with projection using specification expression
     /// </summary>
-    Task<List<TSpecResult>> ToListProjectedAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
+    /// <typeparam name="TSpecResult"> Specification Result Type </typeparam>
+    /// <param name="specification"> Specification Pattern with Result </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> Specification Result Type Collection </returns>
+    Task<List<TSpecResult>> ToListAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Projection using Spec output along using .Distinct method
+    ///  Filter along with projection using specification expression along using .Distinct method
     /// </summary>
-    Task<List<TSpecResult>> ToListProjectedDistinctAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
+    /// <typeparam name="TSpecResult"> Specification Result Type </typeparam>
+    /// <param name="specification"> Specification Pattern with Result </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> Specification Result Type Distinct Collection </returns>
+    Task<List<TSpecResult>> ToListDistinctAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
 
     Task<bool> AnyAsync(Specification<TEntity> specification, CancellationToken cancellationToken);
 
@@ -52,12 +85,12 @@ public interface IReadOnlyRepository<TEntity> where TEntity : class, IEntity
     /// <summary>
     /// Projection using Spec output
     /// </summary>
-    Task<TSpecResult?> FirstOrDefaultProjectedAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
+    Task<TSpecResult?> FirstOrDefaultAsync<TSpecResult>(Specification<TEntity, TSpecResult> specification, CancellationToken cancellationToken);
 
     /// <summary>
     /// Projection using AutoMapper .ProjectTo extension method
     /// </summary>
-    Task<TMapperDestination?> FirstOrDefaultProjectedAsync<TMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
+    Task<TAutoMapperDestination?> FirstOrDefaultAsync<TAutoMapperDestination>(Specification<TEntity> specification, CancellationToken cancellationToken);
 
     Task<TEntity?> SingleOrDefaultAsync(Specification<TEntity> specification, CancellationToken cancellationToken);
 
