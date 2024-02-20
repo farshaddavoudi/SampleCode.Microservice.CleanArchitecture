@@ -24,7 +24,7 @@ public class RoleClaimsCacheService(IDistributedCache distributedCache, IReposit
 
         if (string.IsNullOrWhiteSpace(claimsSerialized))
         {
-            var roleClaimsFromDb = await claimRepository.ToListProjectedDistinctAsync(
+            var roleClaimsFromDb = await claimRepository.ToListDistinctAsync(
                 new ClaimKeyByRoleKeySpec(roleKey), cancellationToken);
 
             if (roleClaimsFromDb.Any())

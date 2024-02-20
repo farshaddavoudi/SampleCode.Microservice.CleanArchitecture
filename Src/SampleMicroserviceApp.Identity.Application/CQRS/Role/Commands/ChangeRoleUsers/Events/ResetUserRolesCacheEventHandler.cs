@@ -9,7 +9,7 @@ public class ResetUserRolesCacheEventHandler(IUserRolesCacheService userRolesCac
 {
     public async Task Handle(RoleUsersChangedEvent notification, CancellationToken cancellationToken)
     {
-        var app = await roleRepository.FirstOrDefaultProjectedAsync(
+        var app = await roleRepository.FirstOrDefaultAsync(
             new ApplicationIdAndKeyByRoleIdSpec(notification.RoleId), cancellationToken);
 
         var appId = app!.Item1;
@@ -17,7 +17,7 @@ public class ResetUserRolesCacheEventHandler(IUserRolesCacheService userRolesCac
 
         foreach (var userId in notification.AffectedUserIds)
         {
-            var roleKeys = await roleRepository.ToListProjectedAsync(
+            var roleKeys = await roleRepository.ToListAsync(
                 new UserRoleKeysInAppByAppIdAndUserId(appId, userId), cancellationToken);
 
             if (roleKeys.Any())

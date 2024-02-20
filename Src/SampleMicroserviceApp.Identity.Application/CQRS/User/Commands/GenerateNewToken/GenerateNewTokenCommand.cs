@@ -31,7 +31,7 @@ public class GenerateNewTokenCommandHandler(
 
         // The RefreshToken is valid, let's create new tokens
 
-        var userFullName = await userRepository.FirstOrDefaultProjectedAsync(new UserFullNameByIdSpec(userId.Value), cancellationToken);
+        var userFullName = await userRepository.FirstOrDefaultAsync(new UserFullNameByIdSpec(userId.Value), cancellationToken);
 
         var claims = authTokenUtility.GetJwtTokenClaims(userId.Value, userFullName ?? "");
 

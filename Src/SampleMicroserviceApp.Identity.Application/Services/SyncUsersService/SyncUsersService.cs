@@ -20,7 +20,7 @@ public class SyncUsersService(
     {
         // Get users from Rahkaran view 
         // Project to record type as well to be comparable
-        var rahkaranUsers = await userRahkaranViewRepository.ToListProjectedAsync<UserComparableRecord>(cancellationToken);
+        var rahkaranUsers = await userRahkaranViewRepository.ToListAsync<UserComparableRecord>(cancellationToken);
 
         // Get users from Users table 
         var systemUsers = await userRepository.ToListAsync(cancellationToken);

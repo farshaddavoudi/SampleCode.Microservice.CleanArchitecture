@@ -40,7 +40,7 @@ public class UserRolesCacheService(
                     continue;
                 }
 
-                var userRolesFromDb = await roleRepository.ToListProjectedDistinctAsync(
+                var userRolesFromDb = await roleRepository.ToListDistinctAsync(
                     new UserRoleKeysInAppByAppIdAndUserId(app.Value.MainApp.Id, userId), cancellationToken);
 
                 if (userRolesFromDb.Any())

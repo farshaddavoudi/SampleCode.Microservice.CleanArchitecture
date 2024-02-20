@@ -13,7 +13,7 @@ public class GetAllApplicationsQueryHandler(IReadOnlyRepository<ApplicationEntit
 {
     public async Task<List<ApplicationDto>> Handle(GetAllApplicationsQuery request, CancellationToken cancellationToken)
     {
-        var apps = await applicationRepository.ToListProjectedAsync<ApplicationDto>(
+        var apps = await applicationRepository.ToListAsync<ApplicationDto>(
                 new ApplicationByFiltersSpec(null), cancellationToken);
 
         foreach (var app in apps)
