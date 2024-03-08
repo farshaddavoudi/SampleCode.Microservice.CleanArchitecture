@@ -16,7 +16,7 @@ public class HandleHangfireDashboardAuthMiddleware(AppSettings appSettings) : IM
             // Add the access_token to the Authorization header
             if (accessToken.IsNotNullOrWhitespace())
             {
-                context.Request.Headers.Add("Authorization", $"Bearer {accessToken}");
+                context.Request.Headers.Append("Authorization", $"Bearer {accessToken}");
             }
         }
 
