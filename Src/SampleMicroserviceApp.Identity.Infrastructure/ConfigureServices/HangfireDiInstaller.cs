@@ -24,7 +24,6 @@ public class HangfireDiInstaller : IDiInstaller
         services.AddHangfireServer(options =>
         {
             var env = appSettings.IsDevelopment ? "DEV" : "PROD";
-
             options.ServerName = $"Core.Identity–{env}–SERVER";
             options.Queues = new[] { HangfireConst.Queue.DefaultQueue };
         });

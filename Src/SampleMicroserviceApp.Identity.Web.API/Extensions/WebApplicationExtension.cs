@@ -45,6 +45,7 @@ public static class WebApplicationExtension
         app.UseHangfireDashboard(HangfireConst.Path, new DashboardOptions
         {
             DashboardTitle = $"{AppMetadataConst.SolutionName} JOBS",
+            PrefixPath = "/Identity",
             Authorization = new List<IDashboardAuthorizationFilter>
             {
                 new HangfireDashboardAuthorizationFilter()
